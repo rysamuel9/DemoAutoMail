@@ -55,37 +55,45 @@ namespace DemoAutoMail
 
         private void SendEmail(Automail email)
         {
-            var smtpClient = ConfigureSmtpClient();
-
-            var mailMessage = new MailMessage
+            try
             {
-                From = new MailAddress(email.Sender),
-                Subject = email.Subject,
-                Body = email.Body,
-            };
+                var smtpClient = ConfigureSmtpClient();
 
-            mailMessage.To.Add(email.EmailTo);
-
-            if (!string.IsNullOrEmpty(email.CC))
-            {
-                var ccAddresses = email.CC.Split(';');
-                foreach (var cc in ccAddresses)
+                var mailMessage = new MailMessage
                 {
-                    mailMessage.CC.Add(cc.Trim());
-                }
-            }
+                    From = new MailAddress(email.Sender),
+                    Subject = email.Subject,
+                    Body = email.Body,
+                };
 
-            if (!string.IsNullOrEmpty(email.BCC))
-            {
-                var bccAddresses = email.BCC.Split(';');
-                foreach (var bcc in bccAddresses)
+                mailMessage.To.Add(email.EmailTo);
+
+                if (!string.IsNullOrEmpty(email.CC))
                 {
-                    mailMessage.Bcc.Add(bcc.Trim());
+                    var ccAddresses = email.CC.Split(';');
+                    foreach (var cc in ccAddresses)
+                    {
+                        mailMessage.CC.Add(cc.Trim());
+                    }
                 }
-            }
 
-            smtpClient.Send(mailMessage);
+                if (!string.IsNullOrEmpty(email.BCC))
+                {
+                    var bccAddresses = email.BCC.Split(';');
+                    foreach (var bcc in bccAddresses)
+                    {
+                        mailMessage.Bcc.Add(bcc.Trim());
+                    }
+                }
+
+                smtpClient.Send(mailMessage);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error sending email to: {email.EmailTo}, Subject: {email.Subject}");
+            }
         }
+
 
 
         private SmtpClient ConfigureSmtpClient()
